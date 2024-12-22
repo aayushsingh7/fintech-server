@@ -157,10 +157,11 @@ export const deleteRecord = async (req, res) => {
     });
   }
 };
-const getMonthlyAggregationPipeline = (recordType) => [
+const getMonthlyAggregationPipeline = (recordType, userId) => [
   // Match records for the entire year with specified recordType
   {
     $match: {
+      user: userId,
       createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) },
       recordType: recordType, // Use the parameter here
     },
@@ -249,8 +250,9 @@ const getMonthlyAggregationPipeline = (recordType) => [
 ];
 
 export const incomeGrowth = async (req, res) => {
+  const { userId } = req.query;
   const results = await FinancialRecord.aggregate(
-    getMonthlyAggregationPipeline("income")
+    getMonthlyAggregationPipeline("income", userId)
   );
   res.status(200).send({ results });
   try {
@@ -264,8 +266,9 @@ export const incomeGrowth = async (req, res) => {
 };
 
 export const expenseGrowth = async (req, res) => {
+  const { userId } = req.query;
   const results = await FinancialRecord.aggregate(
-    getMonthlyAggregationPipeline("expense")
+    getMonthlyAggregationPipeline("expense", userId)
   );
   res.status(200).send({ results });
   try {

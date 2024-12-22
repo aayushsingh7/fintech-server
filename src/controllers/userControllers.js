@@ -43,9 +43,9 @@ export const login = async (req, res, next) => {
       let token = generateJWTToken(user._id);
       res
         .cookie("trial", token, {
-          // sameSite: "none",
+          sameSite: "none",
           httpOnly: true,
-          secure: false,
+          secure: true,
           maxAge: 15 * 24 * 60 * 60 * 1000,
         })
         .status(200)
@@ -85,9 +85,9 @@ export const register = async (req, res, next) => {
     let token = generateJWTToken(newUser._id);
     res
       .cookie("trial", token, {
-        // sameSite: "none",
+        sameSite: "none",
         httpOnly: true,
-        secure: false,
+        secure: true,
         maxAge: 15 * 24 * 60 * 60 * 1000,
       })
       .status(201)
