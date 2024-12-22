@@ -1,4 +1,5 @@
 import FinancialRecord from "../models/financialRecordModel.js";
+import mongoose from "mongoose";
 
 // Helper function to get the first and last day of current month
 const getCurrentMonthRange = () => {
@@ -157,13 +158,105 @@ export const deleteRecord = async (req, res) => {
     });
   }
 };
+// const getMonthlyAggregationPipeline = (recordType, userId) => [
+//   // Match records for the entire year with specified recordType
+//   {
+//     $match: {
+//       user:userId,
+//       createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) },
+//       recordType: recordType, // Use the parameter here
+//     },
+//   },
+//   // Group by year and month, and calculate totals
+//   {
+//     $group: {
+//       _id: {
+//         year: { $year: "$createdAt" },
+//         month: { $month: "$createdAt" },
+//       },
+//       totalAmount: { $sum: "$amount" },
+//     },
+//   },
+//   // Generate all months for the current year
+//   {
+//     $facet: {
+//       allMonths: [
+//         {
+//           $group: {
+//             _id: null,
+//             year: { $first: { $literal: new Date().getFullYear() } },
+//           },
+//         },
+//         {
+//           $project: {
+//             _id: 0,
+//             months: { $range: [1, 13] },
+//             year: 1,
+//           },
+//         },
+//         { $unwind: "$months" },
+//         {
+//           $project: {
+//             year: 1,
+//             month: "$months",
+//           },
+//         },
+//       ],
+//       existingData: [
+//         {
+//           $project: {
+//             year: "$_id.year",
+//             month: "$_id.month",
+//             totalAmount: 1,
+//           },
+//         },
+//       ],
+//     },
+//   },
+//   // Combine existing data with all months
+//   {
+//     $project: {
+//       combined: {
+//         $concatArrays: ["$allMonths", "$existingData"],
+//       },
+//     },
+//   },
+//   { $unwind: "$combined" },
+//   // Group to eliminate duplicates and use the actual total when available
+//   {
+//     $group: {
+//       _id: {
+//         year: "$combined.year",
+//         month: "$combined.month",
+//       },
+//       totalAmount: {
+//         $max: {
+//           $ifNull: ["$combined.totalAmount", 0],
+//         },
+//       },
+//     },
+//   },
+//   // Final reshape and sort
+//   {
+//     $project: {
+//       _id: 0,
+//       year: "$_id.year",
+//       month: "$_id.month",
+//       totalAmount: 1,
+//     },
+//   },
+//   {
+//     $sort: { year: 1, month: 1 },
+//   },
+// ];
+
 const getMonthlyAggregationPipeline = (recordType, userId) => [
   // Match records for the entire year with specified recordType
   {
     $match: {
-      user: userId,
+      user: new mongoose.Types.ObjectId(userId), // Convert userId to ObjectId
       createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) },
-      recordType: recordType, // Use the parameter here
+      recordType: recordType,
     },
   },
   // Group by year and month, and calculate totals

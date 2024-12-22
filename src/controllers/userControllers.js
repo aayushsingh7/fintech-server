@@ -9,14 +9,6 @@ const hashPassword = async (plainPassword) => {
   return hashedPassword;
 };
 
-const comparePassword = async (plainPassword, hashedPassword) => {
-  bcryptjs.compare(plainPassword, hashedPassword, (err, isMatch) => {
-    if (err) throw err;
-    if (isMatch) return true;
-  });
-  return false;
-};
-
 const generateJWTToken = (userID) => {
   const token = jwt.sign({ _id: userID }, process.env.SECRET_KEY, {
     expiresIn: "15d",
@@ -38,7 +30,8 @@ export const login = async (req, res, next) => {
         user: user,
       });
 
-    let isValidPassword = comparePassword(password, user.password);
+    let isValidPassword = await bcryptjs.compare(password, user.password);
+
     if (isValidPassword) {
       let token = generateJWTToken(user._id);
       res
